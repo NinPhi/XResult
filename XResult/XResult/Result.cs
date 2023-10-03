@@ -8,6 +8,13 @@ public abstract class Result
     public List<Error> Errors { get; protected set; } = new();
 
     protected Result() { }
+
+    public static Result<TValue> Ok<TValue>() => new();
+    public static Result<TValue> Ok<TValue>(TValue value) => new(value);
+    public static Result<TValue> Bad<TValue>(string message) => new(new Error(message));
+    public static Result<TValue> Bad<TValue>(string message, string code) => new(new Error(message, code));
+    public static Result<TValue> Bad<TValue>(Error error) => new(error);
+    public static Result<TValue> Bad<TValue>(List<Error> errors) => new(errors);
 }
 
 public class Result<TValue> : Result
@@ -48,16 +55,29 @@ public class Result<TValue> : Result
     public static implicit operator Result<TValue>(TValue value) => new(value);
     public static implicit operator Result<TValue>(Error error) => new(error);
     public static implicit operator Result<TValue>(List<Error> errors) => new(errors);
+
+    public void Deconstruct(out bool isSuccess, out TValue? value, out List<Error> errors)
+    {
+        isSuccess = IsSuccess;
+        value = Value;
+        errors = Errors;
+    }
 }
 
 public class Error
 {
-    public string Code { get; private set; }
     public string Message { get; private set; }
+    public string Code { get; private set; }
 
-    public Error(string code, string message)
+    public Error(string message, string code)
     {
-        Code = code;
         Message = message;
+        Code = code;
+    }
+
+    public Error(string message)
+    {
+        Message = message;
+        Code = string.Empty;
     }
 }
